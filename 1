@@ -1,0 +1,36 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+void encrypt(char text[], int k) {
+    for (int i = 0; i < strlen(text); i++) {
+        if (isalpha(text[i])) {
+            char base = isupper(text[i]) ? 'A' : 'a';
+            text[i] = (text[i] - base + k) % 26 + base;
+        }
+    }
+}
+
+void decrypt(char text[], int k) {
+    for (int i = 0; i < strlen(text); i++) {
+        if (isalpha(text[i])) {
+            char base = isupper(text[i]) ? 'A' : 'a';
+            text[i] = (text[i] - base - k + 26) % 26 + base;
+        }
+    }
+}
+
+int main() {
+    char text[100];
+    int key;
+    printf("Enter text: ");
+    fgets(text, sizeof(text), stdin);
+    text[strcspn(text, "\n")] = '\0';
+    printf("Enter key (1-25): ");
+    scanf("%d", &key);
+    encrypt(text, key);
+    printf("Encrypted: %s\n", text);
+    decrypt(text, key);
+    printf("Decrypted: %s\n", text);
+    return 0;
+}

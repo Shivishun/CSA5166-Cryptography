@@ -1,0 +1,93 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+void generateKeyMatrix(char key[], char keyMatrix[5][5]) {
+    int flag[26] = {0};
+    flag['J' - 'A'] = 1;
+    int k = 0;
+    for (int i = 0; i < strlen(key); i++) {
+        if (isalpha(key[i])) {
+            char letter = toupper(key[i]);
+            if (!flag[letter - 'A']) {
+                keyMatrix[k / 5][k % 5] = letter;
+                flag[letter - 'A'] = 1;
+                k++;
+            }
+        }
+    }
+    for (int i = 0; i < 26; i++) {
+        if (!flag[i]) {
+            keyMatrix[k / 5][k % 5] = 'A' + i;
+            k++;
+        }
+    }
+}
+
+void formatPlaintext(char plaintext[]) {
+    int n = strlen(plaintext);
+    for (int i = 0; i < n - 1; i += 2) {
+        if (plaintext[i] == plaintext[i + 1]) {
+            for (int j = n; j > i + 1; j--) {
+                plaintext[j] = plaintext[j - 1];
+            }
+            plaintext[i + 1] = 'X';
+            n++;
+        }
+    }
+    if (n % 2 != 0) {
+        plaintext[n] = 'X';
+        plaintext[n + 1] = '\0';
+    }
+}
+
+void findPosition(char keyMatrix[5][5], char c, int *row, int *col) {
+    if (c == 'J') c = 'I';
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            if (keyMatrix[i][j] == c) {
+                *row = i;
+                *col = j;
+                return;
+            }
+        }
+    }
+}
+
+void encryptPair(char keyMatrix[5][5], char *a, char *b) {
+    int row1, col1, row2, col2;
+    findPosition(keyMatrix, *a, &row1, &col1);
+    findPosition(keyMatrix, *b, &row2, &col2);
+
+    if (row1 == row2) {
+        *a = keyMatrix[row1][(col1 + 1) % 5];
+        *b = keyMatrix[row2][(col2 + 1) % 5];
+    } else if (col1 == col2) {
+        *a = keyMatrix[(row1 + 1) % 5][col1];
+        *b = keyMatrix[(row2 + 1) % 5][col2];
+    } else {
+        *a = keyMatrix[row1][col2];
+        *b = keyMatrix[row2][col1];
+    }
+}
+
+void encrypt(char plaintext[], char keyMatrix[5][5]) {
+    for (int i = 0; i < strlen(plaintext); i += 2) {
+        encryptPair(keyMatrix, &plaintext[i], &plaintext[i + 1]);
+    }
+}
+
+int main() {
+    char key[30], plaintext[100], keyMatrix[5][5];
+    printf("Enter the keyword: ");
+    scanf("%s", key);
+    printf("Enter the plaintext: ");
+    scanf("%s", plaintext);
+
+    generateKeyMatrix(key, keyMatrix);
+    formatPlaintext(plaintext);
+    encrypt(plaintext, keyMatrix);
+
+    printf("Encrypted Text: %s\n", plaintext);
+    return 0;
+}
